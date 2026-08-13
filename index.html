@@ -1,0 +1,1063 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HireReady AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --sidebar: #202123;
+            --sidebar-hover: #2a2b32;
+            --main: #343541;
+            --user: #343541;
+            --assistant: #444654;
+            --text: #ececf1;
+            --muted: #acacbe;
+            --border: #565869;
+            --green: #19c37d;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--main);
+            color: var(--text);
+        }
+
+        /* =========================
+           MAIN APP
+        ========================= */
+
+        .app {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            flex-shrink: 0;
+        }
+
+        .new-chat {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #565869;
+            border-radius: 7px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .new-chat:hover {
+            background: var(--sidebar-hover);
+        }
+
+        .new-chat-icon {
+            font-size: 20px;
+        }
+
+        .sidebar-title {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            padding-left: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-radius: 6px;
+            color: #ececf1;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item:hover {
+            background: var(--sidebar-hover);
+        }
+
+        .sidebar-bottom {
+            border-top: 1px solid #444;
+            padding-top: 12px;
+        }
+
+        .ai-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .ai-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: var(--green);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .ai-info-text strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .ai-info-text span {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* =========================
+           MAIN CHAT
+        ========================= */
+
+        .main {
+            flex: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--main);
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            height: 60px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .mobile-menu {
+            display: none;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 23px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .model-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .model-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background: var(--green);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .model-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .online {
+            font-size: 11px;
+            color: #8ee7ba;
+            margin-left: 5px;
+        }
+
+        /* =========================
+           CHAT AREA
+        ========================= */
+
+        .chat-scroll {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .welcome {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 70px 25px 30px;
+            text-align: center;
+        }
+
+        .welcome-logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 18px;
+            background: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .welcome h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           MESSAGES
+        ========================= */
+
+        .message {
+            width: 100%;
+            padding: 25px 20px;
+        }
+
+        .message.user {
+            background: var(--user);
+        }
+
+        .message.assistant {
+            background: var(--assistant);
+        }
+
+        .message-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            line-height: 1.65;
+            font-size: 15px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 5px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .user-avatar {
+            background: #6b6c7b;
+        }
+
+        .assistant-avatar {
+            background: var(--green);
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .message-content strong {
+            color: white;
+        }
+
+        /* =========================
+           TYPING
+        ========================= */
+
+        .typing {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            height: 30px;
+        }
+
+        .typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ddd;
+            animation: typing 1.3s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+
+            30% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        /* =========================
+           INPUT AREA
+        ========================= */
+
+        .input-wrapper {
+            padding: 15px 20px 10px;
+            background: var(--main);
+        }
+
+        .input-box {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            min-height: 52px;
+            max-height: 160px;
+            resize: none;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #40414f;
+            color: white;
+            padding: 15px 55px 15px 16px;
+            outline: none;
+            font-size: 15px;
+            line-height: 1.4;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        #userInput::placeholder {
+            color: #a5a5b5;
+        }
+
+        #userInput:focus {
+            border-color: #777889;
+        }
+
+        #sendBtn {
+            position: absolute;
+            right: 9px;
+            bottom: 9px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 7px;
+            background: #19c37d;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        #sendBtn:hover {
+            background: #15a96c;
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #sendBtn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 11px;
+            color: #8e8ea0;
+            padding: 7px 15px 12px;
+            background: var(--main);
+        }
+
+        /* =========================
+           SCROLLBAR
+        ========================= */
+
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #565869;
+            border-radius: 10px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                z-index: 100;
+                transition: 0.25s;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .topbar {
+                padding: 0 12px;
+            }
+
+            .welcome {
+                padding: 45px 20px 25px;
+            }
+
+            .welcome h1 {
+                font-size: 24px;
+            }
+
+            .message {
+                padding: 20px 15px;
+            }
+
+            .message-inner {
+                gap: 12px;
+                font-size: 14px;
+            }
+
+            .input-wrapper {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <button class="new-chat" onclick="newChat()">
+            <span class="new-chat-icon">＋</span>
+            <span>New chat</span>
+        </button>
+
+        <div class="sidebar-title">
+            HireReady AI
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            <div class="history-item">
+                💼 Interview Preparation
+            </div>
+
+            <div class="history-item">
+                📄 Resume & ATS Review
+            </div>
+
+            <div class="history-item">
+                💻 Technical Interview
+            </div>
+
+            <div class="history-item">
+                🧑‍💼 HR Interview Practice
+            </div>
+        </div>
+
+        <div class="sidebar-bottom">
+
+            <div class="ai-info">
+
+                <div class="ai-logo">
+                    HR
+                </div>
+
+                <div class="ai-info-text">
+                    <strong>HireReady AI</strong>
+                    <span>Job Readiness Assistant</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+
+            <button class="mobile-menu" onclick="toggleSidebar()">
+                ☰
+            </button>
+
+            <div class="model-info">
+
+                <div class="model-icon">
+                    HR
+                </div>
+
+                <div>
+                    <div class="model-name">
+                        HireReady AI
+                        <span class="online">● Online</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CHAT -->
+        <div class="chat-scroll" id="chatScroll">
+
+            <!-- WELCOME -->
+            <div class="welcome" id="welcome">
+
+                <div class="welcome-logo">
+                    HR
+                </div>
+
+                <h1>
+                    How can I help you today?
+                </h1>
+
+                <p>
+                    I'm HireReady AI — your smart job readiness and
+                    interview assistant.
+                    <br>
+                    Ask me about interviews, resumes, ATS optimization,
+                    technical questions, or career preparation.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- INPUT -->
+        <div class="input-wrapper">
+
+            <div class="input-box">
+
+                <textarea
+                    id="userInput"
+                    rows="1"
+                    placeholder="Message HireReady AI..."
+                    autocomplete="off"
+                ></textarea>
+
+                <button
+                    id="sendBtn"
+                    aria-label="Send message"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="disclaimer">
+            HireReady AI can make mistakes. Verify important career and
+            technical information.
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    const chatScroll = document.getElementById("chatScroll");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const welcome = document.getElementById("welcome");
+    const sidebar = document.getElementById("sidebar");
+
+    let history = [];
+    let isSending = false;
+
+
+    /* =========================
+       SCROLL
+    ========================= */
+
+    function scrollToBottom() {
+
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+
+    }
+
+
+    /* =========================
+       ADD MESSAGE
+    ========================= */
+
+    function addMessage(role, text) {
+
+        if (welcome) {
+            welcome.style.display = "none";
+        }
+
+        const message = document.createElement("div");
+
+        message.className =
+            "message " +
+            (role === "user" ? "user" : "assistant");
+
+
+        const inner = document.createElement("div");
+
+        inner.className = "message-inner";
+
+
+        const avatar = document.createElement("div");
+
+        avatar.className =
+            "avatar " +
+            (role === "user"
+                ? "user-avatar"
+                : "assistant-avatar");
+
+
+        avatar.textContent =
+            role === "user"
+                ? "YOU"
+                : "HR";
+
+
+        const content = document.createElement("div");
+
+        content.className = "message-content";
+
+        content.textContent = text;
+
+
+        inner.appendChild(avatar);
+        inner.appendChild(content);
+
+        message.appendChild(inner);
+
+        chatScroll.appendChild(message);
+
+        scrollToBottom();
+
+        return content;
+
+    }
+
+
+    /* =========================
+       TYPING INDICATOR
+    ========================= */
+
+    function addTypingIndicator() {
+
+        const message = document.createElement("div");
+
+        message.className = "message assistant";
+        message.id = "typingMessage";
+
+
+        const inner = document.createElement("div");
+
+        inner.className = "message-inner";
+
+
+        const avatar = document.createElement("div");
+
+        avatar.className = "avatar assistant-avatar";
+
+        avatar.textContent = "HR";
+
+
+        const content = document.createElement("div");
+
+        content.className = "message-content";
+
+
+        const typing = document.createElement("div");
+
+        typing.className = "typing";
+
+
+        typing.innerHTML =
+            "<span></span><span></span><span></span>";
+
+
+        content.appendChild(typing);
+
+        inner.appendChild(avatar);
+        inner.appendChild(content);
+
+        message.appendChild(inner);
+
+        chatScroll.appendChild(message);
+
+        scrollToBottom();
+
+    }
+
+
+    function removeTypingIndicator() {
+
+        const typingMessage =
+            document.getElementById("typingMessage");
+
+        if (typingMessage) {
+
+            typingMessage.remove();
+
+        }
+
+    }
+
+
+    /* =========================
+       AUTO RESIZE
+    ========================= */
+
+    function autoResize() {
+
+        userInput.style.height = "auto";
+
+        userInput.style.height =
+            Math.min(userInput.scrollHeight, 160) + "px";
+
+    }
+
+
+    /* =========================
+       SEND MESSAGE
+    ========================= */
+
+    async function sendMessage(text) {
+
+        const message =
+            text !== undefined
+                ? text.trim()
+                : userInput.value.trim();
+
+
+        if (!message || isSending) {
+
+            return;
+
+        }
+
+
+        isSending = true;
+
+        sendBtn.disabled = true;
+
+
+        addMessage("user", message);
+
+
+        userInput.value = "";
+
+        autoResize();
+
+
+        addTypingIndicator();
+
+
+        try {
+
+            const response = await fetch("/api/chat", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    message: message,
+
+                    history: history
+
+                })
+
+            });
+
+
+            const data =
+                await response.json().catch(() => ({}));
+
+
+            removeTypingIndicator();
+
+
+            if (!response.ok) {
+
+                const error =
+                    data.error ||
+                    "Something went wrong. Please try again.";
+
+                addMessage("assistant", error);
+
+                isSending = false;
+
+                sendBtn.disabled = false;
+
+                return;
+
+            }
+
+
+            const reply =
+                data.reply ||
+                "Sorry, I didn't receive a response.";
+
+
+            addMessage("assistant", reply);
+
+
+            history.push({
+
+                role: "user",
+
+                content: message
+
+            });
+
+
+            history.push({
+
+                role: "assistant",
+
+                content: reply
+
+            });
+
+
+            /*
+             Keep only the last 20 messages
+            */
+
+            if (history.length > 20) {
+
+                history =
+                    history.slice(
+                        history.length - 20
+                    );
+
+            }
+
+        }
+
+        catch (error) {
+
+            removeTypingIndicator();
+
+            addMessage(
+                "assistant",
+                "Network error — I couldn't connect to HireReady AI. Please make sure the Flask server is running."
+            );
+
+        }
+
+
+        isSending = false;
+
+        sendBtn.disabled = false;
+
+        userInput.focus();
+
+        scrollToBottom();
+
+    }
+
+
+    /* =========================
+       NEW CHAT
+    ========================= */
+
+    function newChat() {
+
+        history = [];
+
+        chatScroll.innerHTML = "";
+
+        const welcomeScreen =
+            document.createElement("div");
+
+        welcomeScreen.className = "welcome";
+
+        welcomeScreen.id = "welcome";
+
+        welcomeScreen.innerHTML = `
+
+            <div class="welcome-logo">
+                HR
+            </div>
+
+            <h1>
+                How can I help you today?
+            </h1>
+
+            <p>
+                I'm HireReady AI — your smart job readiness
+                and interview assistant.
+                <br>
+                Ask me about interviews, resumes,
+                ATS optimization, technical questions,
+                or career preparation.
+            </p>
+
+        `;
+
+        chatScroll.appendChild(welcomeScreen);
+
+        userInput.value = "";
+
+        autoResize();
+
+        userInput.focus();
+
+    }
+
+
+    /* =========================
+       MOBILE SIDEBAR
+    ========================= */
+
+    function toggleSidebar() {
+
+        sidebar.classList.toggle("open");
+
+    }
+
+
+    /* =========================
+       EVENTS
+    ========================= */
+
+    sendBtn.addEventListener(
+        "click",
+        () => sendMessage()
+    );
+
+
+    userInput.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+    userInput.addEventListener(
+        "input",
+        autoResize
+    );
+
+
+    userInput.focus();
+
+</script>
+
+</body>
+</html>
+```
